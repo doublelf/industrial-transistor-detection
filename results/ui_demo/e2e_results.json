@@ -1,0 +1,221 @@
+{
+  "count": 22,
+  "wall_seconds": 50.4,
+  "final_stats": {
+    "total": 22,
+    "ok": 15,
+    "ng": 7,
+    "ng_rate": 0.3181818181818182,
+    "avg_infer_ms": 1794.6254545454547
+  },
+  "expected_ok": 15,
+  "expected_ng": 7,
+  "live_log_rows": 22,
+  "checks": {
+    "stats_total": true,
+    "ok_ng_counts": true,
+    "ng_fired": true,
+    "live_log_matches": true,
+    "history_limit": true
+  },
+  "parts": [
+    {
+      "seq": 1,
+      "image": "000.png",
+      "ground_truth": "defect",
+      "score": 0.460457,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1684.6
+    },
+    {
+      "seq": 2,
+      "image": "001.png",
+      "ground_truth": "defect",
+      "score": 0.466215,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1662.4
+    },
+    {
+      "seq": 3,
+      "image": "002.png",
+      "ground_truth": "defect",
+      "score": 0.448736,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1688.0
+    },
+    {
+      "seq": 4,
+      "image": "003.png",
+      "ground_truth": "defect",
+      "score": 0.494269,
+      "decision": "NG",
+      "correct": 1,
+      "infer_ms": 1724.8
+    },
+    {
+      "seq": 5,
+      "image": "004.png",
+      "ground_truth": "defect",
+      "score": 0.503057,
+      "decision": "NG",
+      "correct": 1,
+      "infer_ms": 1742.5
+    },
+    {
+      "seq": 6,
+      "image": "005.png",
+      "ground_truth": "defect",
+      "score": 0.48278,
+      "decision": "NG",
+      "correct": 1,
+      "infer_ms": 1731.2
+    },
+    {
+      "seq": 7,
+      "image": "006.png",
+      "ground_truth": "defect",
+      "score": 0.480211,
+      "decision": "NG",
+      "correct": 1,
+      "infer_ms": 1709.1
+    },
+    {
+      "seq": 8,
+      "image": "007.png",
+      "ground_truth": "defect",
+      "score": 0.483793,
+      "decision": "NG",
+      "correct": 1,
+      "infer_ms": 1715.9
+    },
+    {
+      "seq": 9,
+      "image": "008.png",
+      "ground_truth": "defect",
+      "score": 0.479667,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1725.5
+    },
+    {
+      "seq": 10,
+      "image": "009.png",
+      "ground_truth": "defect",
+      "score": 0.463779,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1724.8
+    },
+    {
+      "seq": 11,
+      "image": "000.png",
+      "ground_truth": "defect",
+      "score": 0.473962,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1807.3
+    },
+    {
+      "seq": 12,
+      "image": "001.png",
+      "ground_truth": "defect",
+      "score": 0.463237,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1948.3
+    },
+    {
+      "seq": 13,
+      "image": "002.png",
+      "ground_truth": "defect",
+      "score": 0.450238,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1901.0
+    },
+    {
+      "seq": 14,
+      "image": "003.png",
+      "ground_truth": "defect",
+      "score": 0.45578,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1872.0
+    },
+    {
+      "seq": 15,
+      "image": "004.png",
+      "ground_truth": "defect",
+      "score": 0.494441,
+      "decision": "NG",
+      "correct": 1,
+      "infer_ms": 1835.1
+    },
+    {
+      "seq": 16,
+      "image": "005.png",
+      "ground_truth": "defect",
+      "score": 0.447738,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1865.3
+    },
+    {
+      "seq": 17,
+      "image": "006.png",
+      "ground_truth": "defect",
+      "score": 0.473114,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1847.9
+    },
+    {
+      "seq": 18,
+      "image": "007.png",
+      "ground_truth": "defect",
+      "score": 0.460125,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1865.6
+    },
+    {
+      "seq": 19,
+      "image": "008.png",
+      "ground_truth": "defect",
+      "score": 0.463807,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1858.4
+    },
+    {
+      "seq": 20,
+      "image": "009.png",
+      "ground_truth": "defect",
+      "score": 0.472448,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1854.3
+    },
+    {
+      "seq": 21,
+      "image": "000.png",
+      "ground_truth": "defect",
+      "score": 0.468186,
+      "decision": "OK",
+      "correct": 0,
+      "infer_ms": 1842.7
+    },
+    {
+      "seq": 22,
+      "image": "001.png",
+      "ground_truth": "defect",
+      "score": 0.539738,
+      "decision": "NG",
+      "correct": 1,
+      "infer_ms": 1875.0
+    }
+  ]
+}

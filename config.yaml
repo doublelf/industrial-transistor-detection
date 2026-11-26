@@ -1,0 +1,111 @@
+# Project configuration for zero-shot WinCLIP industrial QC demo.
+#
+# SCOPE: zero-shot only (k_shot = 0). No training, no fine-tuning,
+# no memory bank, no few-shot mode. Prompts are the ONLY tunable parameter.
+#
+# Every run records `prompt_version` so results stay traceable.
+
+model:
+  # Must match anomalib's WinCLIPModel.BACKBONE. Do not change casually:
+  # WinCLIP input resolution and window scales are tied to this backbone.
+  backbone: "ViT-B-16-plus-240"
+
+  # Local weight file. Passing an existing local path as `pretrained`
+  # makes open_clip skip get_pretrained_cfg / download entirely
+  # (open_clip/factory.py:285 -> os.path.exists branch).
+  # If the file below is missing we RAISE and STOP. We never auto-download.
+  weights_path: "weights/vit_b_16_plus_240-laion400m_e31-8fb26589.pt"
+
+  # Expected SHA256 of the local file (recorded for traceability).
+  # Not used to reject the file; mismatches are reported in files_check.md.
+  expected_sha256: "F777E0E06CCBB33ADF0C11B7B2B732FF2063A6BB98D7AC64FA80568674A54556"
+
+  # Locked by the official implementation - NOT user-tunable.
+  temperature: 0.07
+  scales: [2, 3]
+  input_size: [240, 240]
+  k_shot: 0            # MUST stay 0: zero-shot only
+  device: "cpu"
+
+# ---------------------------------------------------------------------------
+# PROMPTS: the only parameter this project allows you to tune.
+# Defaults below are copied VERBATIM from
+#   anomalib/models/image/winclip/prompting.py
+# Do not "improve" them by intuition. If you edit them, bump prompt_version.
+# ---------------------------------------------------------------------------
+prompts:
+  version: "v1-official-default"
+
+  class_name: "transistor"
+
+  normal_states:
+    - "{}"
+    - "flawless {}"
+    - "perfect {}"
+    - "unblemished {}"
+    - "{} without flaw"
+    - "{} without defect"
+    - "{} without damage"
+
+  anomalous_states:
+    - "damaged {}"
+    - "{} with flaw"
+    - "{} with defect"
+    - "{} with damage"
+
+  templates:
+    - "a cropped photo of the {}."
+    - "a close-up photo of a {}."
+    - "a close-up photo of the {}."
+    - "a bright photo of a {}."
+    - "a bright photo of the {}."
+    - "a dark photo of the {}."
+    - "a dark photo of a {}."
+    - "a jpeg corrupted photo of the {}."
+    - "a jpeg corrupted photo of the {}."
+    - "a blurry photo of the {}."
+    - "a blurry photo of a {}."
+    - "a photo of a {}."
+    - "a photo of the {}."
+    - "a photo of a small {}."
+    - "a photo of the small {}."
+    - "a photo of a large {}."
+    - "a photo of the large {}."
+    - "a photo of the {} for visual inspection."
+    - "a photo of a {} for visual inspection."
+    - "a photo of the {} for anomaly detection."
+    - "a photo of a {} for anomaly detection."
+
+# ---------------------------------------------------------------------------
+# Threshold: derived ONLY from normal test images (test/good).
+# Rule: threshold = mean(scores on good) + k * std(scores on good)
+# NEVER tuned on defect images.
+# ---------------------------------------------------------------------------
+threshold:
+  rule: "mean_plus_k_std"
+  k: 2.0
+  source_split: "test/good"
+  # Filled in automatically by scripts/calibrate_threshold.py
+  value: 0.480053
+  n_good: 60
+  mean: 0.451640
+  std: 0.014206
+  calibrated_at: "2026-11-25T15:35:59"
+
+data:
+  # transistor test set only. train/ is not used anywhere in this project.
+  root: "datasets/mvtec_transistor/transistor/test"
+  good_dir: "good"
+  # Image-level label comes from the directory name: good -> OK, else -> defect.
+  demo_order: "mixed"
+
+paths:
+  outputs: "outputs"
+  results: "results"
+  live_log: "results/live_log.csv"
+
+server:
+  host: "127.0.0.1"
+  port: 8000
+  cycle_seconds: 2.0
+  history_limit: 50

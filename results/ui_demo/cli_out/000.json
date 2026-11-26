@@ -1,0 +1,46 @@
+{
+  "image": "datasets\\mvtec_transistor\\transistor\\test\\good\\000.png",
+  "image_size": [
+    1024,
+    1024
+  ],
+  "score": 0.419235,
+  "threshold": 0.480053,
+  "margin": -0.060818,
+  "decision": "OK",
+  "decision_rule": "NG if score >= threshold",
+  "threshold_rule": "mean_plus_k_std",
+  "threshold_k": 2.0,
+  "threshold_source": "test/good",
+  "infer_ms": 2397.53,
+  "total_ms": 2449.68,
+  "anomaly_map_shape": [
+    240,
+    240
+  ],
+  "anomaly_map_min": 0.412084,
+  "anomaly_map_max": 0.443838,
+  "heatmap_path": "D:\\Desktop\\chat\\opencode\\project\\industrial-transistor-detection\\results\\ui_demo\\cli_out\\000_heatmap.png",
+  "prompt_version": "v1-official-default",
+  "class_name": "transistor",
+  "n_normal_prompts": 147,
+  "n_anomalous_prompts": 84,
+  "model": {
+    "backbone": "ViT-B-16-plus-240",
+    "temperature": 0.07,
+    "scales": [
+      2,
+      3
+    ],
+    "input_size": [
+      240,
+      240
+    ],
+    "k_shot": 0,
+    "weights_sha256": "f777e0e06ccbb33adf0c11b7b2b732ff2063a6bb98d7ac64fa80568674a54556",
+    "weights_file": "vit_b_16_plus_240-laion400m_e31-8fb26589.pt",
+    "device": "cpu"
+  },
+  "timestamp": "2026-11-25T15:00:37",
+  "caveat": "Zero-shot score on MVTec AD test imagery; not a production defect rate."
+}

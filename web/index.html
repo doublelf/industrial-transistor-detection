@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zero-shot Anomaly Detection - Simulated Line Demo | WinCLIP</title>
+<style>
+  :root {
+    --bg: #0f1419; --panel: #171e26; --panel2: #1e2732; --line: #2b3746;
+    --txt: #e6edf3; --muted: #8b9bb0; --ok: #22c55e; --ng: #ef4444;
+    --accent: #38bdf8; --warn: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--txt);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  header {
+    padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  header h1 { font-size: 17px; margin: 0; font-weight: 600; }
+  header h1 .h1sub {
+    font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 8px;
+  }
+  .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    background: #7c2d12; color: #fed7aa; border: 1px solid #9a3412;
+  }
+  .banner {
+    background: #422006; color: #fde68a; border-bottom: 1px solid #713f12;
+    padding: 7px 20px; font-size: 12.5px; line-height: 1.5;
+  }
+  main { padding: 16px 20px 40px; max-width: 1500px; margin: 0 auto; }
+  .controls {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 14px;
+  }
+  button {
+    background: var(--panel2); color: var(--txt); border: 1px solid var(--line);
+    border-radius: 7px; padding: 7px 14px; font-size: 13px; cursor: pointer;
+    font-family: inherit; transition: .15s;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary { background: #0c4a6e; border-color: #0369a1; color: #e0f2fe; }
+  button.danger { background: #450a0a; border-color: #7f1d1d; color: #fecaca; }
+  label { font-size: 13px; color: var(--muted); }
+  input[type=number] {
+    width: 74px; background: var(--panel2); color: var(--txt);
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 13px;
+  }
+  .grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 14px; }
+  @media (max-width: 1050px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 14px;
+  }
+  .card h2 { font-size: 13px; margin: 0 0 10px; color: var(--muted); font-weight: 600;
+             text-transform: uppercase; letter-spacing: .06em; }
+  .imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .imgs figure { margin: 0; }
+  .imgs img {
+    width: 100%; border-radius: 7px; border: 1px solid var(--line);
+    background: #0a0a0a; display: block; object-fit: contain;
+    aspect-ratio: 1 / 1; max-height: 46vh;
+  }
+  .imgs figcaption { font-size: 11.5px; color: var(--muted); margin-top: 5px; text-align: center; }
+  .verdict {
+    margin-top: 14px; display: flex; align-items: center; gap: 16px;
+    padding: 14px 18px; border-radius: 10px; border: 2px solid var(--line);
+    transition: .2s;
+  }
+  .verdict.ok { border-color: var(--ok); background: rgba(34,197,94,.09); }
+  .verdict.ng { border-color: var(--ng); background: rgba(239,68,68,.11); }
+  .lamp {
+    width: 46px; height: 46px; border-radius: 50%; background: #334155;
+    box-shadow: inset 0 0 10px rgba(0,0,0,.8); flex: 0 0 auto;
+  }
+  .verdict.ok .lamp { background: var(--ok); box-shadow: 0 0 22px var(--ok), inset 0 0 8px #fff3; }
+  .verdict.ng .lamp { background: var(--ng); box-shadow: 0 0 22px var(--ng), inset 0 0 8px #fff3; }
+  .vtext { font-size: 34px; font-weight: 800; letter-spacing: .04em; }
+  .verdict.ok .vtext { color: var(--ok); }
+  .verdict.ng .vtext { color: var(--ng); }
+  .vmeta { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+  .vmeta b { color: var(--txt); font-weight: 600; }
+  .scale { margin-top: 12px; }
+  .scale-bar {
+    position: relative; height: 26px; border-radius: 6px;
+    background: linear-gradient(90deg, #1d4ed8 0%, #0891b2 45%, #f59e0b 72%, #dc2626 100%);
+    border: 1px solid var(--line);
+  }
+  .scale-thr {
+    position: absolute; top: -5px; bottom: -5px; width: 2px; background: #fff;
+    box-shadow: 0 0 6px #fff;
+  }
+  .scale-thr::after {
+    content: "threshold"; position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: #0b1016; background: #e6edf3; padding: 1px 5px; border-radius: 3px;
+    white-space: nowrap; font-weight: 600;
+  }
+  .scale-mark {
+    position: absolute; top: -7px; width: 0; height: 0;
+    border-left: 7px solid transparent; border-right: 7px solid transparent;
+    border-top: 11px solid var(--txt); transform: translateX(-50%);
+  }
+  .scale-lab { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-top: 14px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+  .stat { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; }
+  .stat .k { font-size: 11px; color: var(--muted); }
+  .stat .v { font-size: 21px; font-weight: 700; margin-top: 2px; }
+  .stat .v.ng { color: var(--ng); }
+  .stat .v.ok { color: var(--ok); }
+  canvas { width: 100%; height: 170px; display: block; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 5px 7px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  tbody tr:hover { background: var(--panel2); }
+  .pill { padding: 1px 7px; border-radius: 9px; font-size: 10.5px; font-weight: 700; }
+  .pill.ok { background: rgba(34,197,94,.16); color: var(--ok); }
+  .pill.ng { background: rgba(239,68,68,.16); color: var(--ng); }
+  .hist-wrap { max-height: 260px; overflow-y: auto; margin-top: 10px; }
+  .thumb { width: 42px; height: 42px; object-fit: cover; border-radius: 5px; border: 1px solid var(--line); }
+  .status { font-size: 12px; color: var(--muted); margin-left: auto; }
+  .err { color: var(--ng); font-size: 12.5px; }
+  .row { display: flex; gap: 14px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+  video { width: 100%; max-width: 320px; border-radius: 8px; border: 1px solid var(--line); background: #000; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Zero-shot Anomaly Detection <span class="h1sub">Simulated Production Line Demo</span></h1>
+  <span class="badge">WinCLIP k_shot=0</span>
+  <span class="badge" style="background:#1e3a5f;color:#bae6fd;border-color:#1e40af">Device: CPU</span>
+  <span id="status" class="status">Initializing…</span>
+</header>
+
+<div class="banner">
+  ⚠️ <b>SIMULATION</b>: all images come from the MVTec AD <b>test set</b>. Zero-shot scores, OK/NG verdicts and the defect rate <b>do NOT represent real production performance</b>. This demo only validates the algorithm pipeline and the UI interaction.
+</div>
+
+<main>
+  <div class="controls">
+    <button id="btn-start" class="primary">▶ Start Line</button>
+    <button id="btn-stop" disabled>⏸ Pause</button>
+    <button id="btn-step" disabled>⏭ Feed One</button>
+    <label>Cycle time (s)<input id="cycle" type="number" min="0.5" max="10" step="0.5" value="2" /></label>
+    <label style="display:flex;gap:6px;align-items:center;">
+      <input id="loop" type="checkbox" checked /> Loop feed
+    </label>
+    <button id="btn-cam">📷 Camera Mode</button>
+    <button id="btn-reset" class="danger">🧹 Reset Stats</button>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: current part -->
+    <div class="card">
+      <h2>Current Part</h2>
+      <div class="imgs">
+        <figure>
+          <img id="img-orig" alt="original" src="data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Crect width='240' height='240' fill='%23111'/%3E%3Ctext x='120' y='124' font-size='12' fill='%23667' text-anchor='middle'%3EWaiting for part%3C/text%3E%3C/svg%3E" />
+          <figcaption>Original</figcaption>
+        </figure>
+        <figure>
+          <img id="img-heat" alt="heatmap" src="data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Crect width='240' height='240' fill='%23111'/%3E%3Ctext x='120' y='124' font-size='12' fill='%23667' text-anchor='middle'%3EWaiting for part%3C/text%3E%3C/svg%3E" />
+          <figcaption>Anomaly heatmap (dark = normal, bright yellow/orange = more anomalous; compare within one image only)</figcaption>
+        </figure>
+      </div>
+
+      <div id="verdict" class="verdict">
+        <div class="lamp"></div>
+        <div>
+          <div class="vtext" id="vtext">IDLE</div>
+          <div class="vmeta" id="vmeta">Waiting for the first part…</div>
+        </div>
+      </div>
+
+      <div class="scale" id="scale-wrap">
+        <div class="scale-bar" id="scale-bar">
+          <div class="scale-thr" id="scale-thr" style="left:50%"></div>
+          <div class="scale-mark" id="scale-mark" style="left:0%"></div>
+        </div>
+        <div class="scale-lab"><span id="scale-min">0.00</span><span>Anomaly score scale (white line = decision threshold)</span><span id="scale-max">1.00</span></div>
+      </div>
+
+      <div class="row" id="cam-row" style="display:none;">
+        <video id="video" autoplay playsinline muted></video>
+        <div>
+          <button id="btn-capture" class="primary">📸 Capture &amp; Inspect</button>
+          <p class="status" id="cam-msg" style="margin-top:8px;max-width:280px;"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: stats / chart / history -->
+    <div>
+      <div class="card">
+        <h2>Live Statistics</h2>
+        <div class="stats">
+          <div class="stat"><div class="k">Inspected</div><div class="v" id="s-total">0</div></div>
+          <div class="stat"><div class="k">OK</div><div class="v ok" id="s-ok">0</div></div>
+          <div class="stat"><div class="k">NG</div><div class="v ng" id="s-ng">0</div></div>
+          <div class="stat"><div class="k">NG Rate</div><div class="v" id="s-rate">0.0%</div></div>
+        </div>
+        <div class="stat" style="margin-top:9px;">
+          <div class="k">Avg. Latency / Part</div><div class="v" id="s-avg" style="font-size:17px;">—</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <h2>Last 50 Parts - Score Trend (dashed red = threshold, red dots = NG)</h2>
+        <canvas id="chart" width="900" height="340"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h2>History (last 50 parts)</h2>
+    <div class="hist-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Preview</th><th>File</th><th>Ground Truth</th><th>Score</th>
+          <th>Verdict</th><th>Match</th><th>Latency</th><th>Time</th>
+        </tr></thead>
+        <tbody id="hist-body"><tr><td colspan="9" style="color:#8b9bb0;">No records yet</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let META = null, MANIFEST = [], cursor = 0, timer = null, running = false, busy = false;
+let HISTORY = [], SESSION = { total: 0, ok: 0, ng: 0, avg_infer_ms: 0, ng_rate: 0 };
+let camStream = null;
+
+// ---------- boot ----------
+async function boot() {
+  try {
+    const h = await (await fetch('/api/health')).json();
+    if (!h.ok) { $('status').innerHTML = '<span class="err">Model not ready: ' + (h.error || 'unknown') + '</span>'; return; }
+    META = await (await fetch('/api/meta')).json();
+    MANIFEST = await (await fetch('/api/manifest')).json();
+    $('cycle').value = META.cycle_seconds_default ?? 2;
+    $('status').textContent =
+      `Ready · backbone ${META.backbone} · threshold ${META.threshold.toFixed(4)} · ` +
+      `prompts ${META.prompt_version} (normal ${META.n_normal_prompts}/anomalous ${META.n_anomalous_prompts}) · ` +
+      `demo images ${META.n_demo_images} · ${META.device.toUpperCase()}`;
+    $('btn-start').disabled = false;
+    renderChart();
+  } catch (e) {
+    $('status').innerHTML = '<span class="err">Startup failed: ' + e + '</span>';
+  }
+}
+
+// ---------- line control ----------
+function startLine() {
+  if (running) return;
+  running = true;
+  $('btn-start').disabled = true; $('btn-stop').disabled = false;
+  $('btn-step').disabled = true; $('btn-cam').disabled = true;
+  exitCamera();
+  tick();
+}
+function stopLine() {
+  running = false;
+  if (timer) { clearTimeout(timer); timer = null; }
+  $('btn-start').disabled = false; $('btn-stop').disabled = true;
+  $('btn-step').disabled = false; $('btn-cam').disabled = false;
+}
+async function tick() {
+  if (!running) return;
+  await feedOne();
+  if (!running) return;
+  const sec = Math.max(0.5, parseFloat($('cycle').value) || 2);
+  timer = setTimeout(tick, sec * 1000);
+}
+
+async function feedOne() {
+  if (busy || !MANIFEST.length) return;
+  if (cursor >= MANIFEST.length) {
+    if (!$('loop').checked) { stopLine(); return; }
+    cursor = 0;
+  }
+  const item = MANIFEST[cursor++];
+  busy = true;
+  try {
+    const res = await fetch('/api/inspect', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rel: item.rel }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    applyResult(await res.json());
+  } catch (e) {
+    $('status').innerHTML = '<span class="err">Inference failed: ' + e.message + '</span>';
+  } finally { busy = false; }
+}
+
+// ---------- render ----------
+function applyResult(r) {
+  $('img-orig').src = r.original_url;
+  $('img-heat').src = r.heatmap_url;
+
+  const v = $('verdict');
+  v.className = 'verdict ' + (r.decision === 'OK' ? 'ok' : 'ng');
+  $('vtext').textContent = r.decision;
+  const truth = r.ground_truth === 'unknown'
+    ? 'Ground truth unknown (camera capture)'
+    : `Ground truth <b>${r.ground_truth}</b> · type <b>${r.defect_type}</b>`;
+  const okTxt = r.correct === null ? '' :
+    (r.correct ? ' · <b style="color:#22c55e">verdict correct</b>' : ' · <b style="color:#ef4444">verdict wrong</b>');
+  $('vmeta').innerHTML =
+    `Score <b>${r.score.toFixed(4)}</b> · threshold <b>${r.threshold.toFixed(4)}</b> ` +
+    `· margin <b>${(r.margin >= 0 ? '+' : '') + r.margin.toFixed(4)}</b><br>` +
+    `Latency <b>${r.infer_ms.toFixed(0)} ms</b> · ${truth}${okTxt}`;
+
+  // threshold scale: display range = threshold +- 0.1 (clamped)
+  const thr = r.threshold;
+  const lo = Math.max(0, thr - 0.1), hi = thr + 0.1;
+  const pct = (x) => Math.max(0, Math.min(100, ((x - lo) / (hi - lo)) * 100));
+  $('scale-thr').style.left = pct(thr) + '%';
+  $('scale-mark').style.left = pct(r.score) + '%';
+  $('scale-min').textContent = lo.toFixed(2);
+  $('scale-max').textContent = hi.toFixed(2);
+
+  SESSION = r.stats;
+  $('s-total').textContent = SESSION.total;
+  $('s-ok').textContent = SESSION.ok;
+  $('s-ng').textContent = SESSION.ng;
+  $('s-rate').textContent = (SESSION.ng_rate * 100).toFixed(1) + '%';
+  $('s-avg').textContent = SESSION.avg_infer_ms.toFixed(0) + ' ms';
+
+  HISTORY = r.history || [];
+  renderChart();
+  renderHistory();
+}
+
+function renderChart() {
+  const cv = $('chart'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height, P = { l: 46, r: 12, t: 12, b: 24 };
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#171e26'; ctx.fillRect(0, 0, W, H);
+
+  const thr = META ? META.threshold : 0.5;
+  const pts = HISTORY.slice(-50);
+  const xs = (i) => P.l + (pts.length <= 1 ? 0 : (i / (pts.length - 1)) * (W - P.l - P.r));
+  const vals = pts.map(p => p.score).concat([thr]);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = Math.max(0.01, (hi - lo) * 0.18); lo -= pad; hi += pad;
+  const ys = (v) => P.t + (1 - (v - lo) / (hi - lo)) * (H - P.t - P.b);
+
+  // grid
+  ctx.strokeStyle = '#2b3746'; ctx.lineWidth = 1; ctx.font = '11px sans-serif';
+  ctx.fillStyle = '#8b9bb0'; ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const v = lo + (hi - lo) * (i / 4), y = ys(v);
+    ctx.beginPath(); ctx.moveTo(P.l, y); ctx.lineTo(W - P.r, y); ctx.stroke();
+    ctx.fillText(v.toFixed(3), P.l - 6, y + 4);
+  }
+  // threshold line
+  const ty = ys(thr);
+  ctx.strokeStyle = '#ef4444'; ctx.setLineDash([6, 4]); ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(P.l, ty); ctx.lineTo(W - P.r, ty); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#ef4444'; ctx.textAlign = 'left';
+  ctx.fillText('thr ' + thr.toFixed(4), P.l + 4, ty - 4);
+
+  if (!pts.length) {
+    ctx.fillStyle = '#8b9bb0'; ctx.textAlign = 'center';
+    ctx.fillText('No data yet', W / 2, H / 2); return;
+  }
+  // polyline
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.beginPath();
+  pts.forEach((p, i) => { const x = xs(i), y = ys(p.score); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+  ctx.stroke();
+  // points
+  pts.forEach((p, i) => {
+    const x = xs(i), y = ys(p.score);
+    ctx.beginPath(); ctx.arc(x, y, p.decision === 'NG' ? 4 : 2.6, 0, Math.PI * 2);
+    ctx.fillStyle = p.decision === 'NG' ? '#ef4444' : '#22c55e';
+    ctx.fill();
+  });
+}
+
+function renderHistory() {
+  const tb = $('hist-body');
+  if (!HISTORY.length) { tb.innerHTML = '<tr><td colspan="9" style="color:#8b9bb0;">No records yet</td></tr>'; return; }
+  tb.innerHTML = HISTORY.slice().reverse().map((h) => {
+    const corr = h.correct === null ? '—'
+      : (h.correct ? '<span class="pill ok">Y</span>' : '<span class="pill ng">N</span>');
+    const t = (h.timestamp || '').split('T')[1] || '';
+    return `<tr>
+      <td>${h.seq}</td>
+      <td><img class="thumb" src="${h.original_url}" loading="lazy" /></td>
+      <td>${h.image}</td>
+      <td>${h.ground_truth}${h.ground_truth === 'unknown' ? '' : ' / ' + h.defect_type}</td>
+      <td>${h.score.toFixed(4)}</td>
+      <td><span class="pill ${h.decision === 'OK' ? 'ok' : 'ng'}">${h.decision}</span></td>
+      <td>${corr}</td>
+      <td>${h.infer_ms.toFixed(0)} ms</td>
+      <td>${t}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ---------- camera ----------
+async function enterCamera() {
+  stopLine();
+  $('cam-row').style.display = 'flex';
+  const msg = $('cam-msg');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    msg.innerHTML = '<span class="err">This browser has no camera API. Falling back to simulated line mode.</span>';
+    $('cam-row').style.display = 'none';
+    startLine();
+    return;
+  }
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+    $('video').srcObject = camStream;
+    msg.textContent = 'Camera ready. Click "Capture & Inspect".';
+  } catch (e) {
+    msg.innerHTML = '<span class="err">Cannot access camera (' + (e.name || e) +
+      '). Falling back to simulated line mode.</span>';
+    $('cam-row').style.display = 'none';
+    startLine();
+  }
+}
+function exitCamera() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  $('cam-row').style.display = 'none';
+}
+async function capture() {
+  const v = $('video');
+  if (!v.videoWidth) { $('cam-msg').innerHTML = '<span class="err">Camera frame not ready.</span>'; return; }
+  const c = document.createElement('canvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  const fd = new FormData(); fd.append('file', blob, 'camera.png');
+  $('cam-msg').textContent = 'Sending…';
+  try {
+    const res = await fetch('/api/inspect/upload', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    applyResult(await res.json());
+    $('cam-msg').textContent = 'Inspected (ground truth unknown, excluded from accuracy stats).';
+  } catch (e) {
+    $('cam-msg').innerHTML = '<span class="err">Inspection failed: ' + e.message + '</span>';
+  }
+}
+
+// ---------- reset ----------
+async function resetStats() {
+  stopLine();
+  await fetch('/api/reset', { method: 'POST' });
+  HISTORY = []; SESSION = { total: 0, ok: 0, ng: 0, avg_infer_ms: 0, ng_rate: 0 };
+  $('s-total').textContent = '0'; $('s-ok').textContent = '0';
+  $('s-ng').textContent = '0'; $('s-rate').textContent = '0.0%'; $('s-avg').textContent = '—';
+  $('vtext').textContent = 'IDLE'; $('vmeta').textContent = 'Statistics reset.';
+  $('verdict').className = 'verdict';
+  renderChart(); renderHistory();
+}
+
+// ---------- wire ----------
+$('btn-start').onclick = startLine;
+$('btn-stop').onclick = stopLine;
+$('btn-step').onclick = () => feedOne();
+$('btn-cam').onclick = enterCamera;
+$('btn-capture').onclick = capture;
+$('btn-reset').onclick = resetStats;
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') exitCamera();
+});
+boot();
+</script>
+</body>
+</html>
